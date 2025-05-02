@@ -15,9 +15,7 @@ const Contact = () => {
           📱 Phone: <a href="tel:+917386477696">+91 7386477696</a>
         </li>
        
-        <li>
-          💬 GitHub: <a href="https://github.com/Sirivennela6" target="_blank" rel="noopener noreferrer">github.com/Sirivennela6</a>
-        </li>
+        
       </ul>
     </div>
   );
