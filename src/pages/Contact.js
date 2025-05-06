@@ -10,7 +10,7 @@ const Contact = () => {
 
     emailjs
       .sendForm(
-        'service_2jc8lxs',      // Replace with your actual values
+        'service_2jc8lxs',  
         'template_2uao04k',
         form.current,
         'HZEzHP67StbBfOVRn'
