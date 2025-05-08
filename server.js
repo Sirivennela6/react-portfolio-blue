@@ -1,63 +1,54 @@
-import express from 'express';
-import formidable from 'formidable';
-import nodemailer from 'nodemailer';
-import cors from 'cors';
-import dotenv from 'dotenv';
-
-dotenv.config();
-
+const express = require('express');
+const multer = require('multer');
+const nodemailer = require('nodemailer');
+const cors = require('cors');
 const app = express();
+const upload = multer();
+
 app.use(cors());
+app.use(express.json());
 
-app.post('/send-email', (req, res) => {
-  const form = new formidable.IncomingForm({ keepExtensions: true });
-
-  form.parse(req, async (err, fields, files) => {
-    if (err) {
-      console.error('Form parsing error:', err);
-      return res.status(500).json({ message: 'Error parsing form data' });
-    }
-
-    try {
-      const { senderEmail, message } = fields;
-      const file = files.file;
-
-      const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
-        },
-      });
-
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: process.env.RECIPIENT_EMAIL,
-        subject: `Message from ${senderEmail}`,
-        text: message,
-        replyTo: senderEmail,
-        attachments: file
-          ? [
-              {
-                filename: file.originalFilename,
-                path: file.filepath,
-              },
-            ]
-          : [],
-      };
-
-      await transporter.sendMail(mailOptions);
-      return res.status(200).json({ message: 'Email sent successfully!' });
-    } catch (error) {
-      console.error('Email sending error:', error);
-      return res.status(500).json({ message: 'Email sending failed.' });
-    }
-  });
+// Nodemailer config (Gmail)
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'sirivennela6166@gmail.com', // Hardcoded sender
+    pass: 'bcclaymtgnitmnbx',         // Gmail App password
+  },
 });
-app.get('/', (req, res) => {
-    res.send('Node.js email sender is live!');
-  });
-  
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.post('/send-email', upload.single('file'), async (req, res) => {
+  try {
+    const { senderEmail, recipientEmail, message } = req.body;
+    const file = req.file;
+
+    // Validation
+   
+
+    const mailOptions = {
+      from: 'sirivennela6166@gmail.com',
+      to: "ganeshdhanasri7@gmail.com",
+      subject: `Message from ${senderEmail}`,
+      text: message,
+      replyTo: senderEmail,
+      attachments: file
+        ? [
+            {
+              filename: file.originalname,
+              content: file.buffer,
+            },
+          ]
+        : [],
+    };
+
+    await transporter.sendMail(mailOptions);
+    res.status(200).json({ message: 'Email sent successfully!' });
+  } catch (error) {
+    console.error('Email sending error:', error);
+    res.status(500).json({ message: 'Email sending failed.' });
+  }
+});
+
+app.listen(5000, () => {
+  console.log('Server running on port 5000');
+});

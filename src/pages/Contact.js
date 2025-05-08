@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import './ContactForm.css';
 
 const ContactForm = () => {
   const [formData, setFormData] = useState({
     senderEmail: '',
+    
     message: '',
     file: null,
   });
@@ -30,28 +32,23 @@ const ContactForm = () => {
 
     const data = new FormData();
     data.append('senderEmail', formData.senderEmail);
+    // data.append('recipientEmail', formData.recipientEmail);
     data.append('message', formData.message);
     if (formData.file) data.append('file', formData.file);
 
     try {
-      const response = await fetch('https://react-portfolio-blue.onrender.com/', {
+      const response = await fetch('http://localhost:5000/send-email', {
         method: 'POST',
         body: data,
       });
 
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
-        const result = await response.json();
-        if (response.ok) {
-          setSuccessMessage(result.message);
-          setFormData({ senderEmail: '', message: '', file: null });
-          setFileName('');
-        } else {
-          setErrorMessage(result.message);
-        }
+      const result = await response.json();
+      if (response.ok) {
+        setSuccessMessage(result.message);
+        setFormData({ senderEmail: '', message: '', file: null });
+        setFileName('');
       } else {
-        const text = await response.text();
-        setErrorMessage(`Unexpected server response: ${text}`);
+        setErrorMessage(result.message);
       }
     } catch (error) {
       setErrorMessage('Failed to send form. ' + error.message);
@@ -71,6 +68,7 @@ const ContactForm = () => {
         placeholder="Your Email"
         required
       />
+     
       <textarea
         name="message"
         value={formData.message}
