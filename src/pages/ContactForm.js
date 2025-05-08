@@ -34,7 +34,7 @@ const ContactForm = () => {
     if (formData.file) data.append('file', formData.file);
 
     try {
-      const response = await fetch('/api/send-email', {
+      const response = await fetch('https://react-portfolio-blue.onrender.com/', {
         method: 'POST',
         body: data,
       });
