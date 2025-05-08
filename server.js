@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const multer = require('multer');
 const nodemailer = require('nodemailer');
@@ -8,36 +9,30 @@ const upload = multer();
 app.use(cors());
 app.use(express.json());
 
-// Nodemailer config (Gmail)
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'sirivennela6166@gmail.com', // Hardcoded sender
-    pass: 'bcclaymtgnitmnbx',         // Gmail App password
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
   },
 });
 
 app.post('/send-email', upload.single('file'), async (req, res) => {
   try {
-    const { senderEmail, recipientEmail, message } = req.body;
+    const { senderEmail, message } = req.body;
     const file = req.file;
 
-    // Validation
-   
-
     const mailOptions = {
-      from: 'sirivennela6166@gmail.com',
-      to: "ganeshdhanasri7@gmail.com",
+      from: process.env.EMAIL_USER,
+      to: process.env.RECIPIENT_EMAIL,
       subject: `Message from ${senderEmail}`,
       text: message,
       replyTo: senderEmail,
       attachments: file
-        ? [
-            {
-              filename: file.originalname,
-              content: file.buffer,
-            },
-          ]
+        ? [{
+            filename: file.originalname,
+            content: file.buffer,
+          }]
         : [],
     };
 
@@ -49,6 +44,4 @@ app.post('/send-email', upload.single('file'), async (req, res) => {
   }
 });
 
-app.listen(5000, () => {
-  console.log('Server running on port 5000');
-});
+app.listen(5000, () => console.log('Server running on port 5000'));
