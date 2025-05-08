@@ -1,89 +1,36 @@
-import React, { useState } from 'react';
-import './ContactForm.css';
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-const ContactForm = () => {
-  const [formData, setFormData] = useState({
-    senderEmail: '',
-    message: '',
-    file: null,
-  });
-  const [fileName, setFileName] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  setSuccessMessage('');
+  setErrorMessage('');
+  setIsLoading(true);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const data = new FormData();
+  data.append('senderEmail', formData.senderEmail);
+  data.append('message', formData.message);
+  if (formData.file) data.append('file', formData.file);
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    setFormData({ ...formData, file });
-    setFileName(file ? file.name : '');
-  };
+  try {
+    const response = await fetch('/api/send-email', {
+      method: 'POST',
+      body: data,
+    });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+    const contentType = response.headers.get('content-type');
+    const result = contentType && contentType.includes('application/json')
+      ? await response.json()
+      : { message: 'Unexpected server error' };
 
-    setSuccessMessage('');
-    setErrorMessage('');
-    setIsLoading(true);
-
-    const data = new FormData();
-    data.append('senderEmail', formData.senderEmail);
-    data.append('message', formData.message);
-    if (formData.file) data.append('file', formData.file);
-
-    try {
-      const response = await fetch('/api/send-email',
-        {
-          method: 'POST',
-          body: data,
-        }
-      );
-
-      const result = await response.json();
-      if (response.ok) {
-        setSuccessMessage(result.message);
-        setFormData({ senderEmail: '', message: '', file: null });
-        setFileName('');
-      } else {
-        setErrorMessage(result.message);
-      }
-    } catch (error) {
-      setErrorMessage('Failed to send form. ' + error.message);
-    } finally {
-      setIsLoading(false);
+    if (response.ok) {
+      setSuccessMessage(result.message);
+      setFormData({ senderEmail: '', message: '', file: null });
+      setFileName('');
+    } else {
+      setErrorMessage(result.message || 'Something went wrong.');
     }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="contact-form" encType="multipart/form-data">
-      <h2>Send Email</h2>
-      <input
-        type="email"
-        name="senderEmail"
-        value={formData.senderEmail}
-        onChange={handleChange}
-        placeholder="Your Email"
-        required
-      />
-      <textarea
-        name="message"
-        value={formData.message}
-        onChange={handleChange}
-        placeholder="Your Message"
-        required
-      />
-      <input type="file" name="file" onChange={handleFileChange} />
-      {fileName && <p>Selected File: {fileName}</p>}
-      <button type="submit" disabled={isLoading}>
-        {isLoading ? 'Sending...' : 'Send'}
-      </button>
-      {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
-      {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
-    </form>
-  );
+  } catch (error) {
+    setErrorMessage('Failed to send form. ' + error.message);
+  } finally {
+    setIsLoading(false);
+  }
 };
-
-export default ContactForm;

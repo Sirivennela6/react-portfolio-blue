@@ -1,5 +1,7 @@
 import formidable from 'formidable';
 import nodemailer from 'nodemailer';
+import fs from 'fs';
+
 export const config = {
   api: {
     bodyParser: false,
@@ -8,10 +10,11 @@ export const config = {
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
+    res.setHeader('Allow', ['POST']);
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
-  const form = new formidable.IncomingForm();
+  const form = new formidable.IncomingForm({ keepExtensions: true });
 
   form.parse(req, async (err, fields, files) => {
     if (err) {
@@ -19,10 +22,10 @@ export default async function handler(req, res) {
       return res.status(500).json({ message: 'Error parsing form data' });
     }
 
-    const { senderEmail, message } = fields;
-    const file = files.file;
-
     try {
+      const { senderEmail, message } = fields;
+      const file = files.file;
+
       const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -38,10 +41,12 @@ export default async function handler(req, res) {
         text: message,
         replyTo: senderEmail,
         attachments: file
-          ? [{
-              filename: file.originalFilename,
-              path: file.filepath,
-            }]
+          ? [
+              {
+                filename: file.originalFilename,
+                path: file.filepath,
+              },
+            ]
           : [],
       };
 
