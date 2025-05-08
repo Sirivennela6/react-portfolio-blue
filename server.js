@@ -3,24 +3,25 @@ const express = require('express');
 const multer = require('multer');
 const nodemailer = require('nodemailer');
 const cors = require('cors');
+
 const app = express();
 const upload = multer();
 
 app.use(cors());
 app.use(express.json());
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
-
 app.post('/send-email', upload.single('file'), async (req, res) => {
   try {
     const { senderEmail, message } = req.body;
     const file = req.file;
+
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
@@ -29,10 +30,7 @@ app.post('/send-email', upload.single('file'), async (req, res) => {
       text: message,
       replyTo: senderEmail,
       attachments: file
-        ? [{
-            filename: file.originalname,
-            content: file.buffer,
-          }]
+        ? [{ filename: file.originalname, content: file.buffer }]
         : [],
     };
 
@@ -44,4 +42,4 @@ app.post('/send-email', upload.single('file'), async (req, res) => {
   }
 });
 
-app.listen(5000, () => console.log('Server running on port 5000'));
+app.listen(5000, () => console.log('Server running on http://localhost:5000'));

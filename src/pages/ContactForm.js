@@ -4,7 +4,6 @@ import './ContactForm.css';
 const ContactForm = () => {
   const [formData, setFormData] = useState({
     senderEmail: '',
-    
     message: '',
     file: null,
   });
@@ -32,15 +31,19 @@ const ContactForm = () => {
 
     const data = new FormData();
     data.append('senderEmail', formData.senderEmail);
-    // data.append('recipientEmail', formData.recipientEmail);
     data.append('message', formData.message);
     if (formData.file) data.append('file', formData.file);
 
     try {
-      const response = await fetch('https://your-backend-service-url/send-email', {
-        method: 'POST',
-        body: data,
-      });
+      const response = await fetch(
+        process.env.NODE_ENV === 'development'
+          ? 'http://localhost:5000/send-email'
+          : '/api/send-email',
+        {
+          method: 'POST',
+          body: data,
+        }
+      );
 
       const result = await response.json();
       if (response.ok) {
@@ -68,14 +71,6 @@ const ContactForm = () => {
         placeholder="Your Email"
         required
       />
-      {/* <input
-        type="email"
-        name="recipientEmail"
-        value={formData.recipientEmail}
-        onChange={handleChange}
-        placeholder="Recipient's Email"
-        required
-      /> */}
       <textarea
         name="message"
         value={formData.message}
