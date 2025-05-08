@@ -4,7 +4,6 @@ import './ContactForm.css';
 const ContactForm = () => {
   const [formData, setFormData] = useState({
     senderEmail: '',
-    
     message: '',
     file: null,
   });
@@ -32,12 +31,11 @@ const ContactForm = () => {
 
     const data = new FormData();
     data.append('senderEmail', formData.senderEmail);
-    // data.append('recipientEmail', formData.recipientEmail);
     data.append('message', formData.message);
     if (formData.file) data.append('file', formData.file);
 
     try {
-      const response = await fetch('https://react-portfolio-blue.onrender.com', {
+      const response = await fetch('https://react-portfolio-blue.onrender.com/send-email', {
         method: 'POST',
         body: data,
       });
@@ -48,7 +46,7 @@ const ContactForm = () => {
         setFormData({ senderEmail: '', message: '', file: null });
         setFileName('');
       } else {
-        setErrorMessage(result.message);
+        setErrorMessage(result.message || 'Failed to send form.');
       }
     } catch (error) {
       setErrorMessage('Failed to send form. ' + error.message);
@@ -68,7 +66,6 @@ const ContactForm = () => {
         placeholder="Your Email"
         required
       />
-     
       <textarea
         name="message"
         value={formData.message}

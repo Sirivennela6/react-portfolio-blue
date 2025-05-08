@@ -12,22 +12,27 @@ app.use(express.json());
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'sirivennela6166@gmail.com', // Hardcoded sender
-    pass: 'bcclaymtgnitmnbx',         // Gmail App password
+    user: process.env.EMAIL_USER, // Use environment variables for sensitive data
+    pass: process.env.EMAIL_PASS, // Use environment variables for sensitive data
   },
 });
 
+// Send Email API
 app.post('/send-email', upload.single('file'), async (req, res) => {
   try {
-    const { senderEmail, recipientEmail, message } = req.body;
+    const { senderEmail, message } = req.body;
     const file = req.file;
 
-    // Validation
-   
+    // Ensure recipientEmail is set in the environment variables
+    const recipientEmail = process.env.RECIPIENT_EMAIL;
+
+    if (!senderEmail || !message || !recipientEmail) {
+      return res.status(400).json({ message: 'Missing required fields.' });
+    }
 
     const mailOptions = {
-      from: 'sirivennela6166@gmail.com',
-      to: "ganeshdhanasri7@gmail.com",
+      from: process.env.EMAIL_USER,
+      to: recipientEmail, // Use recipientEmail from environment variable
       subject: `Message from ${senderEmail}`,
       text: message,
       replyTo: senderEmail,
@@ -42,10 +47,10 @@ app.post('/send-email', upload.single('file'), async (req, res) => {
     };
 
     await transporter.sendMail(mailOptions);
-    res.status(200).json({ message: 'Email sent successfully!' });
+    return res.status(200).json({ message: 'Email sent successfully!' });
   } catch (error) {
     console.error('Email sending error:', error);
-    res.status(500).json({ message: 'Email sending failed.' });
+    return res.status(500).json({ message: 'Email sending failed.' });
   }
 });
 
