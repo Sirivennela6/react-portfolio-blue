@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import './ContactForm.css';
 
 const ContactForm = () => {
   const [formData, setFormData] = useState({
@@ -40,13 +39,19 @@ const ContactForm = () => {
         body: data,
       });
 
-      const result = await response.json();
-      if (response.ok) {
-        setSuccessMessage(result.message);
-        setFormData({ senderEmail: '', message: '', file: null });
-        setFileName('');
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const result = await response.json();
+        if (response.ok) {
+          setSuccessMessage(result.message);
+          setFormData({ senderEmail: '', message: '', file: null });
+          setFileName('');
+        } else {
+          setErrorMessage(result.message);
+        }
       } else {
-        setErrorMessage(result.message);
+        const text = await response.text();
+        setErrorMessage(`Unexpected server response: ${text}`);
       }
     } catch (error) {
       setErrorMessage('Failed to send form. ' + error.message);
