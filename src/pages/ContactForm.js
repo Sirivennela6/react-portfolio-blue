@@ -35,10 +35,7 @@ const ContactForm = () => {
     if (formData.file) data.append('file', formData.file);
 
     try {
-      const response = await fetch(
-        process.env.NODE_ENV === 'development'
-          ? 'http://localhost:5000/send-email'
-          : '/api/send-email',
+      const response = await fetch('/api/send-email',
         {
           method: 'POST',
           body: data,
